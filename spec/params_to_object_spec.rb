@@ -1,5 +1,4 @@
 require 'spec_helper'
-# require 'active_record'
 
 # Mock object to test non existent relationships
 Hahahha = Class.new do
@@ -91,7 +90,49 @@ describe JsonApiRails::ParamsToObject do
       expect(params_object.object.person).to be_an_instance_of(Person)
     end
 
-    it 'appends to a collection relationship' do
+    it 'allows setting a to_one relationship to nil' do
+      uuid = SecureRandom.uuid
+      hooman = Person.create!(uuid: SecureRandom.uuid)
+      article = Article.create!(uuid: uuid)
+      hooman.articles << article
+      hooman.save!
+
+      params_object = JsonApiRails::ParamsToObject.new({
+        data: {
+          id: uuid,
+          type: 'articles',
+          relationships: {
+            person: {
+              data: nil
+            }
+          }
+        }
+      })
+
+      expect(params_object.object.person).to be_nil
+    end
+
+    it 'allows setting a to_many relationship to an empty array' do
+      uuid = SecureRandom.uuid
+      person = Person.create!(uuid: uuid)
+      person.articles << Article.create!(uuid: SecureRandom.uuid)
+
+      params_object = JsonApiRails::ParamsToObject.new({
+        data: {
+          id: uuid,
+          type: 'people',
+          relationships: {
+            articles: {
+              data: []
+            }
+          }
+        }
+      })
+
+      expect(params_object.object.articles).to eq []
+    end
+
+    it 'replaces relationships with the relationship array' do
       uuid = SecureRandom.uuid
       person = Person.create!(uuid: uuid)
       person.articles << Article.create!(uuid: SecureRandom.uuid)
@@ -100,7 +141,7 @@ describe JsonApiRails::ParamsToObject do
       existing_article_uuid = SecureRandom.uuid
       article = Article.create!(uuid: existing_article_uuid)
 
-      expected_articles = person.articles + [article]
+      expected_articles = [article]
 
       params_object = JsonApiRails::ParamsToObject.new({
         data: {

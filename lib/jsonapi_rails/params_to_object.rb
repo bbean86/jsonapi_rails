@@ -130,15 +130,8 @@ module JsonApiRails
     def assign_relationships
       relationships.each do |rel|
         next if rel.blank?
-        if rel[:relations].respond_to?(:each) # assume array like object
-          array_like_object = rel[:relations]
-          check_method(rel[:name], relationship: true)
-          relationship = object.send(rel[:name])
-          relationship << array_like_object
-        else
-          check_method("#{rel[:name]}=", relationship: true)
-          object.send("#{rel[:name]}=", rel[:relations])
-        end
+        check_method("#{rel[:name]}=", relationship: true)
+        object.send("#{rel[:name]}=", rel[:relations])
       end
     end
 
@@ -181,18 +174,24 @@ module JsonApiRails
     #     { name: :person, relations: [discovered_object] }
     def relationships
       @relationships.flat_map do |relationship_name, rel|
-        created_objects = if rel[:data].is_a?(Array)
-          rel[:data].map do |nested_rel|
-            next if nested_rel.blank?
-            validate_relationship_hash(nested_rel)
-            self.class.new({data: nested_rel}).object
-          end
+        next unless rel.key?(:data)
+        if rel[:data].nil?
+          {name: relationship_name, relations: nil}
+        elsif rel[:data].blank?
+          {name: relationship_name, relations: []}
         else
-          next if rel[:data].blank?
-          validate_relationship_hash(rel[:data])
-          self.class.new(rel).object
+          created_objects = if rel[:data].is_a?(Array)
+            rel[:data].map do |nested_rel|
+              next if nested_rel.blank?
+              validate_relationship_hash(nested_rel)
+              self.class.new({data: nested_rel}).object
+            end
+          else
+            validate_relationship_hash(rel[:data])
+            self.class.new(rel).object
+          end
+          {name: relationship_name, relations: created_objects}
         end
-        {name: relationship_name, relations: created_objects}
       end
     end
 
