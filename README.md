@@ -1,4 +1,7 @@
-# JsonapiRails
+# JsonApiRails
+
+[![Code Climate](https://codeclimate.com/github/bbean86/jsonapi_rails/badges/gpa.svg)](https://codeclimate.com/github/bbean86/jsonapi_rails)
+[![Build Status](https://travis-ci.org/bbean86/jsonapi_rails.svg?branch=master)](https://travis-ci.org/bbean86/jsonapi_rails)
 
 Provides helpers for Rails applications that conform to the JSONAPI spec
 
