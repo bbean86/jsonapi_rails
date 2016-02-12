@@ -1,4 +1,5 @@
 module JsonApiRails
+  # Namespace for helpers to be used in `ActionController::Base` descendants.
   module ControllerHelpers
     # Prepares included relationship names for use in JsonApi.serialize. It
     # expects a list of symbols.
