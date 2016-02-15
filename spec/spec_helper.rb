@@ -45,8 +45,18 @@ end
 class PersonResource < JsonApi::Resource
   id_field :uuid
   attribute :name
+  attribute :overridden_name
 
   has_many :articles
+
+  def overridden_name
+    object.name + '!!'
+  end
+end
+
+class AlternatePersonResource < JsonApi::Resource
+  id_field :uuid
+  attribute :name
 end
 
 class ArticleResource < JsonApi::Resource

@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    jsonapi_rails (0.0.2.pre.beta)
+    jsonapi_rails (0.0.3.pre.beta)
       hash_validator
 
 GEM

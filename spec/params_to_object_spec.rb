@@ -59,7 +59,21 @@ describe JsonApiRails::ParamsToObject do
       expect(params_object.object.name).to eq 'mac'
     end
 
-    it "raises an error if the object doesn't have the attribute" do
+    it 'swallows assignment of any attribute defined on the Resource class but not the underlying model' do
+      expect {
+        JsonApiRails::ParamsToObject.new(
+          data: {
+            type: 'people',
+            attributes: {
+              overridden_name: 'Ben',
+              name: 'Benjamin'
+            }
+          }
+        )
+      }.to_not raise_error
+    end
+
+    it "raises an error if the object doesn't have the attribute and it is not defined on its Resource" do
       expect{
         JsonApiRails::ParamsToObject.new({
           data: {
@@ -203,5 +217,36 @@ describe JsonApiRails::ParamsToObject do
     expect{
       params_object.validate_relationship_hash({id: '1', type: ['what']})
     }.to raise_error "Field `type' is malformed or missing"
+  end
+
+  describe '#resource' do
+    context 'given a model with properly named Resource' do
+      subject(:params_object) do
+        JsonApiRails::ParamsToObject.new(data: { type: 'people' })
+      end
+
+      it 'can resolve and instantiate a Resource' do
+        expect(params_object.resource).to be_an_instance_of(PersonResource)
+      end
+    end
+
+    context 'given a resource_class option' do
+      subject(:params_object) do
+        JsonApiRails::ParamsToObject.new(
+          {
+            data: {
+              type: 'people'
+            }
+          },
+          nil, {
+            resource_class: 'AlternatePersonResource'
+          }
+        )
+      end
+
+      it 'can resolve and instantiate a Resource' do
+        expect(params_object.resource).to be_an_instance_of(AlternatePersonResource)
+      end
+    end
   end
 end

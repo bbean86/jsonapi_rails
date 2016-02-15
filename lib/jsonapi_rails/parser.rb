@@ -3,8 +3,8 @@ module JsonApiRails
   # `ParamsToObject`, then extracting the model and passing it to the given
   # block.
   class Parser
-    def initialize(params_hsh, ar_relation = nil)
-      @wrapper = ParamsToObject.new params_hsh, ar_relation
+    def initialize(params_hsh, ar_relation = nil, options = {})
+      @wrapper = ParamsToObject.new params_hsh, ar_relation, options
     end
 
     # Extracts the model from the wrapper, then passes it to the given block.
