@@ -238,9 +238,8 @@ describe JsonApiRails::ParamsToObject do
               type: 'people'
             }
           },
-          nil, {
-            resource_class: 'AlternatePersonResource'
-          }
+          nil,
+          'AlternatePersonResource'
         )
       end
 

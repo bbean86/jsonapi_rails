@@ -7,12 +7,12 @@ module JsonApiRails
     attr_reader :object
     attr_reader :attributes
 
-    def initialize(data_hash, ar_relation = nil, options = {})
+    def initialize(data_hash, ar_relation = nil, resource_class = nil)
       validate_json(data_hash)
 
       data = data_hash[:data]
       @object = setup_object(data, ar_relation)
-      @options = options
+      @resource_class = resource_class
 
       @attributes = Hash(data[:attributes])
       @relationships = Hash(data[:relationships])
@@ -237,12 +237,20 @@ module JsonApiRails
       end
     end
 
-    # Resolves the Resource class and returns an instance built with `object`
+    # Instanciates a Resource built with `object`
+    #
+    # @return [Resource]
     def resource
-      return @resource if @resource
-      resource_klass =
-        JsonApi::Resources::Discovery.resource_for_name object, @options
-      @resource = resource_klass.new object
+      @resource ||= resource_klass.new object
+    end
+
+    # Resolves the Resource class for `object`
+    #
+    # @return [Resource] the resolved Resource class for `object`
+    def resource_klass
+      @resource_klass ||= JsonApi::Resources::Discovery
+        .resource_for_name object,
+                           resource_class: @resource_class
     end
   end
 end
