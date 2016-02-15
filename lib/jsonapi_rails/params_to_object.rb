@@ -88,7 +88,7 @@ module JsonApiRails
     # attribute passed into this class on initialization
     def assign_attributes
       attributes.each_with_object({}) do |(attr, value), hsh|
-        unless resource.fields_array.include? attr
+        unless resource.fields_array.include? attr.to_sym
           message = "`#{object.class}' does not have attribute " \
                     "`#{attr.to_s.gsub('=', '')}'"
           fail UnknownAttributeError.new(message)
