@@ -1,3 +1,7 @@
+v 0.1.1-beta
+Fixes an issue with comparing strings to symbols when building the list of
+assignable attributes.
+
 v 0.1.0-beta
 Fixes #8. Attributes must be defined on the model or Resource to be assigned.
 Updates #parse_json_api_params interface to be more readable.

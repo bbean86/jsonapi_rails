@@ -48,14 +48,16 @@ describe JsonApiRails::ParamsToObject do
 
   describe 'attributes' do
     it 'updates an attribute' do
-      params_object = JsonApiRails::ParamsToObject.new({
-        data: {
-          type: 'people',
-          attributes: {
-            name: 'mac'
+      params_object = JsonApiRails::ParamsToObject.new(
+        HashWithIndifferentAccess.new({
+          'data' => {
+            'type' => 'people',
+            'attributes' => {
+              'name' => 'mac'
+            }
           }
-        }
-      })
+        })
+      )
       expect(params_object.object.name).to eq 'mac'
     end
 
