@@ -7,11 +7,12 @@ module JsonApiRails
     attr_reader :object
     attr_reader :attributes
 
-    def initialize(data_hash, ar_relation = nil)
+    def initialize(data_hash, ar_relation = nil, resource_class = nil)
       validate_json(data_hash)
 
       data = data_hash[:data]
       @object = setup_object(data, ar_relation)
+      @resource_class = resource_class
 
       @attributes = Hash(data[:attributes])
       @relationships = Hash(data[:relationships])
@@ -86,7 +87,14 @@ module JsonApiRails
     # Calls the setter method "attr=" with the attribute value for each
     # attribute passed into this class on initialization
     def assign_attributes
-      attributes.each do |attr,value|
+      attributes.each_with_object({}) do |(attr, value), hsh|
+        unless resource.fields_array.include? attr
+          message = "`#{object.class}' does not have attribute " \
+                    "`#{attr.to_s.gsub('=', '')}'"
+          fail UnknownAttributeError.new(message)
+        end
+        hsh[attr] = value if assignable_attribute_names.include? attr.to_s
+      end.each do |attr,value|
         check_method("#{attr}=")
         object.send("#{attr}=", value)
       end
@@ -216,6 +224,33 @@ module JsonApiRails
         result << error_template % {field_name: attr}
       end
       fail ValidationError.new(errors.join(', ')) if errors.present?
+    end
+
+    # Inspects the model using `attribute_names` and selects the attributes
+    # which are also present in the Resource's `fields_array`.
+    #
+    # @return [Array<String>] list of attributes available to assign to the
+    # underlying model
+    def assignable_attribute_names
+      object.attribute_names.select do |attr|
+        resource.fields_array.include? attr.to_sym
+      end
+    end
+
+    # Instanciates a Resource built with `object`
+    #
+    # @return [Resource]
+    def resource
+      @resource ||= resource_klass.new object
+    end
+
+    # Resolves the Resource class for `object`
+    #
+    # @return [Resource] the resolved Resource class for `object`
+    def resource_klass
+      @resource_klass ||= JsonApi::Resources::Discovery
+        .resource_for_name object,
+                           resource_class: @resource_class
     end
   end
 end
