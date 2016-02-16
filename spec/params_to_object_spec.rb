@@ -85,7 +85,7 @@ describe JsonApiRails::ParamsToObject do
             }
           }
         })
-      }.to raise_error("`Person' does not have attribute `not_an_attribute'")
+      }.to raise_error("`PersonResource' does not have attribute `not_an_attribute'")
     end
   end
 
@@ -148,6 +148,26 @@ describe JsonApiRails::ParamsToObject do
       expect(params_object.object.articles).to eq []
     end
 
+    it 'allows setting a to_many relationship to null' do
+      uuid = SecureRandom.uuid
+      person = Person.create!(uuid: uuid)
+      person.articles << Article.create!(uuid: SecureRandom.uuid)
+
+      params_object = JsonApiRails::ParamsToObject.new(
+        data: {
+          id: uuid,
+          type: 'people',
+          relationships: {
+            articles: {
+              data: nil
+            }
+          }
+        }
+      )
+
+      expect(params_object.object.articles).to eq []
+    end
+
     it 'replaces relationships with the relationship array' do
       uuid = SecureRandom.uuid
       person = Person.create!(uuid: uuid)
@@ -178,18 +198,18 @@ describe JsonApiRails::ParamsToObject do
       uuid = SecureRandom.uuid
       Person.create!(uuid: uuid)
       expect{
-      JsonApiRails::ParamsToObject.new({
-        data: {
-          id: uuid,
-          type: 'people',
-          relationships: {
-            non_existent: {
-              data: [{ id: SecureRandom.uuid, type: 'hahahhas' }]
+        JsonApiRails::ParamsToObject.new({
+          data: {
+            id: uuid,
+            type: 'people',
+            relationships: {
+              non_existent: {
+                data: [{ id: SecureRandom.uuid, type: 'hahahhas' }]
+              }
             }
           }
-        }
-      })
-      }.to raise_error "`Person' does not have relationship `non_existent'"
+        })
+      }.to raise_error "`PersonResource' does not have relationship `non_existent'"
     end
   end
 
