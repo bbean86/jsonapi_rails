@@ -1,3 +1,6 @@
+v 0.2.1-beta
+Promotes `json_api_ruby` from dev dependencies to dependencies
+
 v 0.2.0-beta
 Fixes #11. Relationships must now be defined on the model and Resource to be
 assigned. To-many relationships can now be set to `null` without error.
