@@ -86,10 +86,13 @@ module JsonApiRails
 
     # Calls the setter method "attr=" with the attribute value for each
     # attribute passed into this class on initialization
+    #
+    # @raise [UnknownAttributeError] raised if the `resource` does not define
+    #   the attribute
     def assign_attributes
       attributes.each_with_object({}) do |(attr, value), hsh|
         unless resource.fields_array.include? attr.to_sym
-          message = "`#{object.class}' does not have attribute " \
+          message = "`#{resource.class}' does not have attribute " \
                     "`#{attr.to_s.gsub('=', '')}'"
           fail UnknownAttributeError.new(message)
         end
@@ -100,8 +103,9 @@ module JsonApiRails
       end
     end
 
-    # For each relationship specified in the relationships hash, find the
-    # underlying object and assign it to the *object* relationship.
+    # For each relationship specified in the relationships hash and defined on
+    # the Resource, find the underlying object and assign it to the *object*
+    # relationship.
     #
     # Example:
     #   class Person
@@ -134,12 +138,34 @@ module JsonApiRails
     # that article to the *articles* relationship on the dynamically found
     # *person* object
     #
-    #
+    # @raise [UnknownRelationshipError] raised if the `resource` does not
+    #   define the given relationship
     def assign_relationships
       relationships.each do |rel|
         next if rel.blank?
+        json_api_relationship = resource.relationships.detect do |relationship|
+          relationship.name == rel[:name].to_s
+        end
+        unless json_api_relationship
+          message = "`#{resource.class}' does not have relationship " \
+                    "`#{rel[:name].to_s.gsub('=', '')}'"
+          raise UnknownRelationshipError.new(message)
+        end
+        relationship_value =
+          # JsonApi::Resources::ToManyRelationship implements #resource_objects
+          # JsonApi::Resources::ToOneRelationship implements #resource_object
+          # use these to identify what type of relationship we're working with
+          if json_api_relationship.respond_to?(:resource_objects)
+            # cast to an array to prevent assigning `null` to an ActiveRecord
+            # to-many relationship
+            rel[:relations].to_a
+          else
+            # no need to cast potential `null`s, since an ActiveRecord to-one
+            # can be set to `null`
+            rel[:relations]
+          end
         check_method("#{rel[:name]}=", relationship: true)
-        object.send("#{rel[:name]}=", rel[:relations])
+        object.send("#{rel[:name]}=", relationship_value)
       end
     end
 
