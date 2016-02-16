@@ -152,10 +152,7 @@ module JsonApiRails
           raise UnknownRelationshipError.new(message)
         end
         relationship_value =
-          # JsonApi::Resources::ToManyRelationship implements #resource_objects
-          # JsonApi::Resources::ToOneRelationship implements #resource_object
-          # use these to identify what type of relationship we're working with
-          if json_api_relationship.respond_to?(:resource_objects)
+          if json_api_relationship.cardinality == :many
             # cast to an array to prevent assigning `null` to an ActiveRecord
             # to-many relationship
             rel[:relations].to_a
