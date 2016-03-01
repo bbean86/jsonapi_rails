@@ -1,3 +1,10 @@
+v 0.3.1-beta
+Version bump for json api ruby dependency. Fixes duplication in the
+`included` field for collection resources.
+
+v 0.3.0-beta
+Removes links from serialized responses, the feature is still in beta
+
 v 0.2.1-beta
 Promotes `json_api_ruby` from dev dependencies to dependencies
 
