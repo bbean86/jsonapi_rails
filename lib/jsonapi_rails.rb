@@ -3,6 +3,8 @@ require "jsonapi_rails/params_to_object"
 require "jsonapi_rails/parser"
 require "jsonapi_rails/version"
 require 'jsonapi_rails/railtie'
+require 'json_api_ruby'
+require 'hash_validator'
 
 module JsonApiRails
   # Error is the base class for JsonApiRails. It can be rescued in a controller
