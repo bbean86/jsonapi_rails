@@ -6,13 +6,17 @@ module JsonApiRails
   class ParamsToObject
     attr_reader :object
     attr_reader :attributes
+    # Array of attribute names not set on the Resource but that should be allowed
+    # Useful for transient attributes, such as a credit card number
+    attr_reader :whitelisted
 
-    def initialize(data_hash, ar_relation = nil, resource_class = nil)
+    def initialize(data_hash, ar_relation = nil, resource_class = nil, whitelisted = [])
       validate_json(data_hash)
 
       data = data_hash[:data]
       @object = setup_object(data, ar_relation)
       @resource_class = resource_class
+      @whitelisted = whitelisted
 
       @attributes = Hash(data[:attributes])
       @relationships = Hash(data[:relationships])
@@ -91,7 +95,7 @@ module JsonApiRails
     #   the attribute
     def assign_attributes
       attributes.each_with_object({}) do |(attr, value), hsh|
-        unless resource.fields_array.include? attr.to_sym
+        unless whitelisted?(attr)
           message = "`#{resource.class}' does not have attribute " \
                     "`#{attr.to_s.gsub('=', '')}'"
           fail UnknownAttributeError.new(message)
@@ -250,14 +254,18 @@ module JsonApiRails
     end
 
     # Inspects the model using `attribute_names` and selects the attributes
-    # which are also present in the Resource's `fields_array`.
+    # which are also present in the Resource's `fields_array`. Alternatively,
+    # properties from the model can be whitelisted, and will also be returned.
     #
     # @return [Array<String>] list of attributes available to assign to the
     # underlying model
     def assignable_attribute_names
-      object.attribute_names.select do |attr|
-        resource.fields_array.include? attr.to_sym
-      end
+      stored_attributes = object.attribute_names.select &method(:whitelisted?)
+      transient_attributes = whitelisted.select do |attribute_name|
+        check_method("#{attribute_name}=")
+        true
+      end.map(&:to_s)
+      stored_attributes + transient_attributes
     end
 
     # Instanciates a Resource built with `object`
@@ -274,6 +282,13 @@ module JsonApiRails
       @resource_klass ||= JsonApi::Resources::Discovery
         .resource_for_name object,
                            resource_class: @resource_class
+    end
+
+    # Checks for the attribute's presence in the Resource's fields array or the
+    # whitelist
+    def whitelisted?(attribute_name)
+      resource.fields_array.include?(attribute_name.to_sym) ||
+      whitelisted.include?(attribute_name.to_sym)
     end
   end
 end

@@ -33,6 +33,8 @@ end
 class Person < ActiveRecord::Base
   include Identifiers
 
+  attr_accessor :not_serialized
+
   has_many :articles
 end
 

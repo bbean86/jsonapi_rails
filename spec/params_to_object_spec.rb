@@ -87,6 +87,28 @@ describe JsonApiRails::ParamsToObject do
         })
       }.to raise_error("`PersonResource' does not have attribute `not_an_attribute'")
     end
+
+    context 'that are whitelisted' do
+      let(:params_object) do
+        JsonApiRails::ParamsToObject.new({
+          data: {
+            type: 'people',
+            attributes: {
+              not_serialized: true
+            }
+          }
+        },
+        nil,
+        nil,
+        [:not_serialized])
+      end
+
+      subject(:whitelisted) { params_object.object.not_serialized }
+
+      it 'can be set on the underlying model' do
+        expect(whitelisted).to be_truthy
+      end
+    end
   end
 
   describe 'relationships' do
