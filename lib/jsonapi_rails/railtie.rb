@@ -35,6 +35,9 @@ module JsonApiRails
         self.content_type ||= JsonApiRails::MIMETYPE
         json
       end
+
+      # Links are not yet fully-featured
+      JsonApi.configuration.use_links = false
     end
   end
 end
