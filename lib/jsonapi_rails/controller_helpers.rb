@@ -10,8 +10,8 @@ module JsonApiRails
 
     # Parses `params_hsh` and passes the resulting model to the given block.
     # Rescues and renders any errors encountered when parsing.
-    def parse_json_api_params(params_hsh, ar_relation: nil, resource_class: nil, whitelisted: [], &block)
-      parser = Parser.new params_hsh, ar_relation, resource_class, whitelisted
+    def parse_json_api_params(params_hsh, ar_relation: nil, resource_class: nil, permitted: [], &block)
+      parser = Parser.new params_hsh, ar_relation, resource_class, permitted 
       parser.execute block
     rescue Error => exception
       render json_api_errors: [exception.message]
