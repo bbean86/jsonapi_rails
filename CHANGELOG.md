@@ -1,3 +1,6 @@
+v 0.4.1-beta
+Adds support for nested includes
+
 v 0.4.0-beta
 Renames the `whitelisted` option to `permitted`
 
