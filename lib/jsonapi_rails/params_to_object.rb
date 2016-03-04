@@ -1,5 +1,3 @@
-require 'hash_validator'
-
 module JsonApiRails
   # {ParamsToObject} converts a JSONAPI compliant hash-like object into a
   # ready-to-use model.
